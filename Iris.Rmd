@@ -1,0 +1,230 @@
+---
+title: "Iris Data"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+## 1. Exploratory Data Analysis
+
+### 1.1 Background
+
+The Iris flower data set or Fisher's Iris data set is one of the most popular examples that is widely used in statistical inference, data mining, machine learning, etc. The data set was initially introduced by Ronald Fisher (British statistician and biologist) in his linear discriminant analysis (LDA). Sometimes, the data set is also called Anderson's Iris data set because Edgar Anderson quantified the disparity of the flowers from three associated categories (Iris setosa, Iris virginica, and Iris versicolor).
+
+### 1.2 Load Data
+
+By checking the structure of the data, there are 150 observations and 5 variables - "Sepal.Length," "Sepal.Width," "Petal.Length," "Petal.Width," and "Species." The data type of the variable "Species" is factor while the others are numeric. 
+
+
+```{r}
+data("iris")
+head(iris)
+str(iris)
+```
+
+### 1.3 Summary Statistics
+
+We use minimum, 1st quantile, median, 3rd quantile and maximum these five parameters to describe the statistics of the Iris data set. To better visualize the numbers, please refer to the following boxplots.
+
+Based on the summary, we could see that sepal length has the highest mean value and petal width has the lowest. The variation in petal length is significantly greater than the others'. The number of samples from different species is equally the same. From the mean value perspective, the sequence of the variables (high to low) is sepal length, petal length, sepal width, petal width. 
+
+
+```{r}
+summary(iris)
+boxplot(iris[,1:4],notch=T,col=c("orange", "yellow", "light blue", "purple"))
+```
+
+
+
+Below are the boxplots by groups.
+```{r warning=FALSE}
+boxplot(iris[,1] ~ iris[,5], notch=F, main = "Sepal Length by Species in Iris", xlab="Species", ylab="Sepal Length", col="orange")
+boxplot(iris[,2] ~ iris[,5], notch=F, main = "Septal Width by Species in Iris", xlab="Species", ylab="Sepal Width", col="yellow")
+boxplot(iris[,3] ~ iris[,5], notch=F, main = "Petal Length by Species in Iris", xlab="Species", ylab="Petal Length", col="light blue")
+boxplot(iris[,4] ~ iris[,5], notch=F, main = "Petal Width by Species in Iris", xlab="Species", ylab="Petal Width", col="purple")
+```
+
+### 1.4 Histogram & Density Plot
+
+To further understand the distribution of the four variables and gather more insights, we plotted histogram and density distributions. 
+
+By looking at the histogram and density of petal length, we could find that there is a gap between 2 and 3 approximately. For petal width, there seems to be a gap as well.
+
+```{r}
+hist(iris$Sepal.Length, prob=T,breaks=20, main="Histogram and Density of Sepal Length", xlim=c(3,9), xlab="Sepal Length",col="orange")
+lines(density(iris$Sepal.Length), col="red", lwd=2)
+abline(v=mean(iris$Sepal.Length), col="blue", lty=2, lwd=1.5)
+
+hist(iris$Sepal.Width, prob=T,breaks=20, main="Histogram and Density of Sepal Width", xlim=c(1.5,4.5), xlab="Sepal Width",  col="yellow")
+lines(density(iris$Sepal.Width), col="red", lwd=2)
+abline(v=mean(iris$Sepal.Width), col="blue", lty=2, lwd=1.5)
+
+hist(iris$Petal.Length, prob=T,breaks=30, main="Histogram and Density of Petal Length", xlim=c(1,7), xlab="Petal Length",  col="light blue")
+lines(density(iris$Petal.Length), col="red", lwd=2)
+abline(v=mean(iris$Petal.Length), col="blue", lty=2, lwd=1.5)
+
+hist(iris$Petal.Width, prob=T,breaks=20, main="Histogram and Density of Petal Width", xlim=c(0,3), xlab="Petal Width",  col="purple")
+lines(density(iris$Petal.Width), col="red", lwd=2)
+abline(v=mean(iris$Petal.Width), col="blue", lty=2, lwd=1.5)
+```
+
+If we take a closer look at the density plots of the variables but in groups (Species), the gaps in the previous histograms could be well explained. The petal length and petal width of setosa are completely different from the other two species. These two variables could be potentially used to classify setosa. 
+
+If we were to select one of the four variables to identify these three species - setosa, virginica, versicolor, we would pick petal width, by comparing the overlap in density plot, the less the better. 
+
+```{r message=FALSE, warning=FALSE}
+library(ggplot2)
+ggplot(iris, aes(x = Sepal.Length, colour = Species)) + geom_density()+ scale_color_manual(breaks = c("setosa", "virginica", "versicolor"), values=c("red", "blue", "green"))
+ggplot(iris, aes(x = Sepal.Width, colour = Species)) + geom_density()+ scale_color_manual(breaks = c("setosa", "virginica", "versicolor"), values=c("red", "blue", "green"))
+ggplot(iris, aes(x = Petal.Length, colour = Species)) + geom_density()+ scale_color_manual(breaks = c("setosa", "virginica", "versicolor"), values=c("red", "blue", "green"))
+ggplot(iris, aes(x = Petal.Width, colour = Species)) + geom_density()+ scale_color_manual(breaks = c("setosa", "virginica", "versicolor"), values=c("red", "blue", "green"))
+```
+
+### 1.5 Scatter Plot
+
+From the scatter plots, we could find out that there is a positive correlation between petal length and petal width. If the petal width is large, the petal length tends to be great as well. 
+
+For species virginica and versicolor, there could be positive correlations among all four variables - sepal length, sepal width, petal length, and petal width. It indicates that we could probably identify between the two species by checking the flower sizes in general.
+
+To better categorize the species, classification methods could be applied based on the scatter plots. The variables petal length and petal width are recommended for further studies. 
+
+```{r}
+ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width, colour = Species)) + geom_point()+ scale_color_manual(breaks = c("setosa", "virginica", "versicolor"), values=c("red", "blue", "green"))
+
+ggplot(iris, aes(x = Petal.Length, y = Petal.Width, colour = Species)) + geom_point()+ scale_color_manual(breaks = c("setosa", "virginica", "versicolor"), values=c("red", "blue", "green"))
+
+my_cols<-c("red","blue","green")
+pairs(iris[,1:4],col=my_cols[iris$Species],lower.panel=NULL)
+```
+
+#Supervised Learning - KNN Classification
+
+#KNN Classification Overview: 
+
+The K-Nearest Neighbor is a type of Supervised Learning algorithm that classifies objects into a class, depending how similar they are to their nearest neighbors. The similarity is identified through euclidean distance between the object and its neighbors. Also, K refers to the number of nearest neighbors to be considered in the classification process. A better K value is the one with a lower error rate, or a better prediction accuracy rate.
+
+#Approach:
+
+For the iris data set, we conduct a KNN classification on the categories of iris flowers,i.e on the Species column which consists of 3 categories - Setosa, Versicolor & Virginia.
+
+Through a setseed, the iris data is randomly sampled into 80% training set and 20% test set. This divides the iris data into 120 rows of train set and 30 rows of train set. The model is always built on the training set and later evaluated on the test set.
+
+The contingency table for each k value tells us about the number instances that have been correctly and incorrectly classified in the 20% test data. Similarly, the prediction accuracy gives a percentage of values that have been correctly classified.
+
+As a good practice(in order to prevent ties), we have taken odd values of 5 & 15 for the k values. 
+
+#Conclusion:
+
+As we see below,the out of sample test prediction accuracy for K = 15 is 90% and for K = 5 is 93.33%.
+
+The k value of 15 is fairly big compared to k value of 5, and hence k=15 as a classfier tends to have smoother boundaries with low-variance and high-bias. In contrast, a smaller value of k= 5 implies, even small noise will have a high influence on data, resulting in high variance & low bias. Hence k = 15 is a better k value in this case as it also minimizes the miserror.
+
+```{r}
+#KNN initial setup
+library(class)
+```
+
+#Splitting the Data set
+```{r}
+set.seed(13437885)
+index <- sample(x=nrow(iris), size = nrow(iris)*0.8)#sampling indices,replacement false
+iris_train <- iris[index,] # selected obs and all cols
+iris_test <- iris[-index,]
+```
+
+#KNN Classification for K=15 & Prediction accuracy on test sample that was not used for model building
+
+Results when k = 15 :
+
+For k = 15, we get the following output through the contingency table:
+8 setosa have been accurately predicted as setosa 
+10  out of the 12 versicolor have been accurately predicted as versicolor, and the other 2 are misclassified as virginica
+9  out of the 10 virginica have been accurately predicted as virginia, and 1 is missclassified as versicolor
+
+The prediction accuracy of the model is 90%, and therefore we try another value for k to see if the performance can be improved.
+
+```{r}
+knn_iris_a <- knn(train = iris_train[,-5], test = iris_test[,-5], cl = iris_train[,5],k = 15)
+
+#Contingency Table for k = 15
+table(iris_test[,5], knn_iris_a, dnn = c("True","Predicted"))
+miserror_a <- round((sum(iris_test[,5]!=knn_iris_a)/nrow(iris_test)*100),2)
+miserror_a #changing k will change missclassification error
+pred_accuracy_a = round((sum(knn_iris_a==iris_test[,5])/nrow(iris_test)*100),2)
+pred_accuracy_a
+
+```
+
+#KNN Classification for K=5 & Prediction accuracy on test sample that was not used for model building
+
+Results when k = 5:
+
+For k = 5, we get the following output:
+8 setosa have been accurately predicted as setosa 
+10  out of the 12 versicolor have been accurately predicted as versicolor, and the other 2 are misclassified as virginica
+10 virginica have been accurately predicted as virginica
+
+Hence we see that the prediction accuracy of the model is 93.33%,which is slightly better than the accuracy at k = 15. 
+```{r}
+knn_iris_b<- knn(train = iris_train[,-5], test = iris_test[,-5],cl = iris_train[,5],k = 5)
+
+#Contingency Table for k = 5
+table(iris_test[,5], knn_iris_b, dnn = c("True","Predicted"))
+miserror_b <- round((sum(iris_test[,5]!=knn_iris_b)/nrow(iris_test)*100),2)
+miserror_b
+pred_accuracy_b = round((sum(knn_iris_b==iris_test[,5])/nrow(iris_test)*100),2)
+pred_accuracy_b
+```
+
+## Unsupervised Learning 
+
+### 1.K-means Clustering
+* K-means clustering is the most popular clustering which groups data points into k-sub categories based on similarity. K is a user specified value.
+
+* From exploratory data analysis, the recommendations where to use petal lenght and petal width for further analysis. So we choose these two features for clustering
+* Since the number of species in iris dataset is 3, we choose the k-value to be 3.
+* nstart will determine the number of starting assignments to select the one with the lowest within-cluster variation..
+* Observation: The algorithm misclassified 2 datapoints in versicolor and 4 datapoints in virginica species
+* The accuracy of this algorithm for this data set is 96%
+
+
+
+```{r}
+set.seed(13437885) # setting seed
+head(iris)
+k3<-kmeans(iris[,3:4],3,nstart = 20)
+#Comparing clusters with species column of iris dataset
+print(table(k3$cluster, iris$Species))
+#viewing the clustering
+library(ggplot2)
+ggplot(iris, aes(x = Petal.Length, y = Petal.Width, colour = Species)) + geom_point()+ scale_color_manual(breaks = c("setosa", "virginica", "versicolor"), values=c("red", "blue", "green"))
+k3$cluster <- as.factor(k3$cluster)
+ggplot(iris, aes(x = Petal.Length, y = Petal.Width, colour = k3$cluster)) + geom_point()+ scale_color_manual(breaks = c("2", "3", "1"), values=c("red", "blue", "green"))
+
+```
+
+### 2. Heirarchial Clustering
+
+* Heirarchial clustering is grouping of datapoints based on their dissmilarity. It can be divided into agglomerative clustering and divisive clustering. Agglomerative follows bottom up approach and divisive follows top bottom approach. 
+* For finding dissimilarity matrix, euclidean distance or manhattan distance can be used. In this assignment, eclidean distance has been used.
+* The agglomerative clustering can futher be divided into Complete link, avg link, single link based on how two points are checked for dissimilarity. Here, complete lnk is being used.
+* Since we know that the number of clusters is 3, we try to find clusters from the dendograms by cutting it at a level to get 3 clusters
+
+```{r}
+#Finding dissimilarity matrix
+dist_iris <- dist(as.matrix(iris))
+
+#agglomerative clustering
+heirar_clus <- hclust(dist_iris,method = "complete")
+#plotting dendogram
+plot(heirar_clus, cex = 0.6, hang = -1)
+rect.hclust(heirar_clus, k = 3, border = 2:5)
+
+#Divisive clustering
+library(cluster)
+divi_clus <- diana(dist_iris)
+pltree(divi_clus, cex = 0.6)
+
+```
+
